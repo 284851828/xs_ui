@@ -9,8 +9,11 @@ import (
 	"xs/router"
 
 	"github.com/gin-gonic/gin"
+	// ginSwagger "github.com/swaggo/gin-swagger"
+	// "github.com/swaggo/gin-swagger/swaggerFiles"
+
+	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 // 初始化总路由
@@ -20,6 +23,7 @@ func Routers() *gin.Engine {
 	InstallPlugin(Router) // 安装插件
 	systemRouter := router.RouterGroupApp.System
 	exampleRouter := router.RouterGroupApp.Example
+	xtRouter := router.RouterGroupApp.Xstock
 	// 如果想要不使用nginx代理前端网页，可以修改 web/.env.production 下的
 	// VUE_APP_BASE_API = /
 	// VUE_APP_BASE_PATH = http://localhost
@@ -28,6 +32,8 @@ func Routers() *gin.Engine {
 	// Router.Static("/favicon.ico", "./dist/favicon.ico")
 	// Router.Static("/static", "./dist/assets")   // dist里面的静态资源
 	// Router.StaticFile("/", "./dist/index.html") // 前端网页入口页面
+
+	Router.Static("/admin", "./admin") // 前端网页入口页面
 
 	Router.StaticFS(global.GVA_CONFIG.Local.StorePath, http.Dir(global.GVA_CONFIG.Local.StorePath)) // 为用户头像和文件提供静态地址
 	// Router.Use(middleware.LoadTls())  // 如果需要使用https 请打开此中间件 然后前往 core/server.go 将启动模式 更变为 Router.RunTLS("端口","你的cre/pem文件","你的key文件")
@@ -71,6 +77,8 @@ func Routers() *gin.Engine {
 
 		exampleRouter.InitCustomerRouter(PrivateGroup)              // 客户路由
 		exampleRouter.InitFileUploadAndDownloadRouter(PrivateGroup) // 文件上传下载功能路由
+
+		xtRouter.InitRouter(PrivateGroup, PublicGroup)
 
 	}
 

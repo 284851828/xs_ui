@@ -6,6 +6,7 @@ import (
 	"xs/global"
 	"xs/model/example"
 	"xs/model/system"
+	"xs/model/xstock"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -53,6 +54,9 @@ func RegisterTables() {
 		example.ExaCustomer{},
 		example.ExaFileChunk{},
 		example.ExaFileUploadAndDownload{},
+
+		xstock.FutureCls{},
+		xstock.Pred{},
 	)
 	if err != nil {
 		global.GVA_LOG.Error("register table failed", zap.Error(err))
