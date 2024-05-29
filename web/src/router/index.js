@@ -14,13 +14,22 @@ const routes = [{
   name: 'Login',
   component: () => import('@/view/login/index.vue')
 },
+
+{
+  path: '/dashboard-simple',
+  name: 'DashboardSimple',
+  meta: {
+    requireAuth: false,
+  },
+  component: () => import('@/view/dashboard/simple/index.vue')
+},
 {
   path: '/:catchAll(.*)',
   meta: {
     closeTab: true,
   },
   component: () => import('@/view/error/index.vue')
-}
+},
 ]
 
 const router = createRouter({

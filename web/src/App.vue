@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <el-config-provider :locale="zhCn">
+    <el-config-provider >
       <router-view />
     </el-config-provider>
   </div>
@@ -13,7 +13,6 @@ export default {
 </script>
 
 <script setup>
-import zhCn from 'element-plus/lib/locale/lang/zh-cn'
 </script>
 <style lang="scss">
 // 引入初始化样式
