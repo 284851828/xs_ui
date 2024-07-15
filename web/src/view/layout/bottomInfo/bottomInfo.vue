@@ -1,7 +1,7 @@
 <template>
   <div class="bottom-info">
     <div>
-      <span>Powered by</span>
+      <!-- <span>Powered by</span>
       <span>
         <a href="https://github.com/flipped-aurora/gin-vue-admin">{{ $GIN_VUE_ADMIN.appName }}</a>
       </span>
@@ -9,7 +9,7 @@
       <span>Copyright</span>
       <span>
         <a href="https://github.com/flipped-aurora">flipped-aurora团队</a>
-      </span>
+      </span> -->
     </div>
   </div>
 </template>

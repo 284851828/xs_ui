@@ -15,14 +15,14 @@ const routes = [{
   component: () => import('@/view/login/index.vue')
 },
 
-{
-  path: '/dashboard-simple',
-  name: 'DashboardSimple',
-  meta: {
-    requireAuth: false,
-  },
-  component: () => import('@/view/dashboard/simple/index.vue')
-},
+// {
+//   path: '/dashboard-simple',
+//   name: 'DashboardSimple',
+//   meta: {
+//     requireAuth: true,
+//   },
+//   component: () => import('@/view/dashboard/simple/index.vue')
+// },
 {
   path: '/:catchAll(.*)',
   meta: {

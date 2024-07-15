@@ -25,3 +25,10 @@ export const requestPredList = (data) => {
   })
 }
 
+export const requestPred0000ListList = (data) => {
+  return service({
+    url: '/xstock/getPred0000List',
+    method: 'POST',
+    data: data
+  })
+}

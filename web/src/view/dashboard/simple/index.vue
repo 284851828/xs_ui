@@ -14,24 +14,27 @@
     </div>
     <div class="chart-container">
       <div class="chart-header">
-<!--        <div class="chart-title">-->
-<!--          {{ mActiveFuture }}-->
-<!--        </div>-->
         <div class="flex">
           <div class="chart-tab">
+            <el-radio-group v-model="mChartType" size="mini" @change="onChartTypeChange">
+              <el-radio-button label="daily">日日线</el-radio-button>
+              <el-radio-button label="day">分时线</el-radio-button>
+            </el-radio-group>
             <el-date-picker
+              v-if="mChartType === 'day'"
               v-model="mCurrentPredDate"
               type="date"
-              size="small"
+              size="mini"
               :clearable="false"
               @change="onCurrentPredDateChange"
+              style="margin-left: 10px;"
             />
-            <!--            <el-radio-group v-model="mCurrentDuration" size="small" @change="onChartDurationChange">-->
-            <!--              <el-radio-button v-for="duration in durations" :key="duration.value" :label="duration.label" :value="duration.value" />-->
-            <!--            </el-radio-group>-->
+            <div v-if="mChartType === 'day'" class="ml-10">
+              {{ mMoc900Data }}
+            </div>
           </div>
           <div class="chart-title-extra">
-            <el-button size="small" :icon="FullScreen" circle @click="requestFullScreen" />
+            <el-button size="mini" :icon="FullScreen" circle @click="requestFullScreen" />
           </div>
         </div>
       </div>
@@ -40,10 +43,6 @@
           :option="mEchartsOptions"
           :style="{ width: '100%', height: '100%' }"
         />
-<!--        <VCharts-->
-<!--          :option="mEchartsOptions"-->
-<!--          :style="{ width: '500px', height: '300px' }"-->
-<!--        />-->
       </div>
     </div>
   </div>
@@ -56,7 +55,7 @@ export default {
 </script>
 
 <script setup>
-import {  onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import {
   FullScreen
 } from '@element-plus/icons-vue'
@@ -75,7 +74,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import { BarChart, LineChart, PieChart, RadarChart } from 'echarts/charts'
 import { use } from 'echarts/core'
-import { requestFutureClsList, requestPredList } from '@/api/xstock'
+import { requestFutureClsList, requestPredList, requestPred0000ListList } from '@/api/xstock'
 import dayjs from 'dayjs'
 import { groupBy, uniq } from 'lodash-es'
 
@@ -95,75 +94,41 @@ use([
   TransformComponent,
 ])
 
-// const durations = ref([
-//   {
-//     label: '1分钟',
-//     value: 'New York'
-//   },
-//   {
-//     label: '5分钟',
-//     value: 'Washington',
-//     disabled: true
-//   },
-//   {
-//     label: '15分钟',
-//     value: 'Los Angeles'
-//   },
-//   {
-//     label: '30分钟',
-//     value: 'Chicago'
-//   },
-//   {
-//     label: '1小时',
-//     value: 'Chicago'
-//   },
-//   {
-//     label: '4小时',
-//     value: 'Chicago'
-//   },
-//   {
-//     label: '1天',
-//     value: 'Chicago'
-//   },
-//   {
-//     label: '7天',
-//     value: 'Chicago'
-//   }
-// ])
-
 const mCurrentPredDate = ref(new Date())
 
 const onCurrentPredDateChange = async() => {
   await getPredList()
 }
 
+const mMoc900Data = ref('');
+
 const getPredList = async() => {
-  const res = await requestPredList({
-    cls: mActiveFuture.value.class,
-    date: dayjs(mCurrentPredDate.value).format('YYYY-MM-DD'),
-  })
-  const originalData = res.data?.records ?? []
-  // const originalData = [
-  //   { time: '08:00:01', y: 0.51, model: '008' },
-  //   { time: '08:00:02', y: 0.52, model: '008' },
-  //   { time: '08:00:03', y: 0.53, model: '008' },
-  //   { time: '08:00:04', y: 0.54, model: '008' },
-  //   { time: '08:00:05', y: 0.55, model: '008' },
-  //   { time: '08:00:01', y: 0.61, model: '009' },
-  //   { time: '08:00:02', y: 0.42, model: '009' },
-  //   { time: '08:00:03', y: 0.33, model: '009' },
-  //   { time: '08:00:04', y: 0.44, model: '009' },
-  //   { time: '08:00:05', y: 0.65, model: '019' },
-  //   { time: '08:00:06', y: 0.65, model: '019' },
-  //   { time: '08:00:07', y: 0.65, model: '019' },
-  //   { time: '08:00:08', y: 0.65, model: '019' },
-  //   { time: '08:10:08', y: 0.65, model: '019' },
-  //   { time: '22:10:08', y: 1.5, model: '029' },
-  //   { time: '22:10:09', y: 1.9, model: '029' },
-  // ]
-  const data = groupBy(originalData, 'model')
-  console.log('data..', data)
-  setEchartsOptions(data)
+  if (mChartType.value === 'day') {
+    const res = await requestPredList({
+      cls: mActiveFuture.value.class,
+      date: dayjs(mCurrentPredDate.value).format('YYYY-MM-DD'),
+    });
+
+    const moc900Data = res.data?.moc900 ?? {};
+    mMoc900Data.value = Object.entries(moc900Data)
+    .map(([key, value]) => `${key} : ${value}`)
+    .join(' | ');
+
+    const originalData = (res.data?.records ?? []).map(v => ({ time: v.time, y: v.y, model: v.model }));
+    const data = groupBy(originalData, 'model');
+    setEchartsOptions(data);
+    initTimer();
+  } else if (mChartType.value === 'daily') {
+    const res = await requestPred0000ListList({
+      cls: mActiveFuture.value.class,
+      date: dayjs(mCurrentPredDate.value).format('YYYY-MM-DD'),
+    });
+    const originalData = (res.data?.records ?? []).map(v => ({ date: v.date, y: v.y, model: v.model }));
+    const data = groupBy(originalData, 'model');
+    setEchartsOptionsByDaily(data)
+    initTimer()
+    console.log('onChartTypeChange')
+  }
 }
 // #region 左侧
 const mFutureList = ref([])
@@ -236,21 +201,79 @@ const mEchartsOptions = ref({
 
 // const randomColor = ['#165DFF', '#FFA800', '#FF3A3A', '#00C2FF', '#00C2FF', '#00C2FF', '#00C2FF', '#00C2FF', '#00C2FF', '#00C2FF', '#00C2FF', '#00C2FF']
 
+const completeTimeSeries = (startTimeArray, endTimeStr) => {
+  const endTime = new Date(`1970-01-01 ${endTimeStr}:00`)
+  let result = startTimeArray.map(timeStr => {
+    const [hours, minutes, seconds] = timeStr.split(':')
+    return new Date(`1970-01-01 ${hours}:${minutes}:${seconds}`)
+  })
+  // 获取最后一个起始时间，并初始化为第一个时间的整分钟版本
+  const lastTime = new Date(result.length ? result[result.length - 1].setSeconds(0, 0) : '1970-01-01 09:00:00') // 确保从整分钟开始
+  while (lastTime < endTime) {
+    lastTime.setMinutes(lastTime.getMinutes() + 1)
+    lastTime.setSeconds(0) // 重置秒数为0
+    result.push(new Date(lastTime))
+  }
+  result = result.map(date => {
+    let hours = date.getHours()
+    let minutes = date.getMinutes()
+    let seconds = date.getSeconds()
+    hours = hours < 10 ? '0' + hours : hours
+    minutes = minutes < 10 ? '0' + minutes : minutes
+    seconds = seconds < 10 ? '0' + seconds : seconds
+    return `${hours}:${minutes}:${seconds}`
+  })
+
+  return result
+}
+
 /**
  *
  * @param data {time: string; y: number; model: string}
  */
 const setEchartsOptions = (data) => {
-  console.log(data)
   const xAxisTmpData = []
   Object.keys(data).forEach(v => {
     data[v].forEach(v2 => {
       xAxisTmpData.push(v2.time)
     })
   })
-  const xAxisData = uniq(xAxisTmpData).sort()
+
+  const showSymbol = Object.keys(data).map(v => data[v].length).filter(v => v < 10).length > 0
+  let xAxisData = uniq(xAxisTmpData).sort()
+  const lastTime = xAxisData[xAxisData.length - 1]
+
+  xAxisData = completeTimeSeries(xAxisData, '15:00')
 
   const legend = Object.keys(data)
+
+  const series = []
+  Object.keys(data).forEach((v) => {
+    const seriesData = []
+    let latest = 0
+    // 在当前时间内绘制，超出后暂不绘制
+    for (let i = 0; i < xAxisData.length; i++) {
+      const target = data[v].find(v2 => v2.time === xAxisData[i])
+      if (target) {
+        latest = target.y
+      }
+      if (xAxisData[i] > lastTime) {
+        seriesData.push(undefined)
+      } else {
+        seriesData.push(target ? target.y : latest)
+      }
+    }
+    series.push({
+      name: v,
+      type: 'line',
+      data: seriesData,
+      showSymbol,
+      lineStyle: {
+        width: 2,
+      },
+      symbolSize: 4,
+    })
+  })
 
   mEchartsOptions.value = {
     grid: {
@@ -276,20 +299,103 @@ const setEchartsOptions = (data) => {
     legend: {
       data: legend,
     },
-    series: legend.map((v, index) => {
-      return {
-        name: v,
-        data: data[v].map(v2 => v2.y),
-        type: 'line',
-        showSymbol: false,
-        // smooth: true,
-        lineStyle: {
-          // color: randomColor[index],
-          width: 2,
-        },
-      }
-    })
+    series,
   }
+}
+
+const setEchartsOptionsByDaily = (data) => {
+  const xAxisTmpData = []
+  Object.keys(data).forEach(v => {
+    data[v].forEach(v2 => {
+      xAxisTmpData.push(v2.date)
+    })
+  });
+
+  // console.log('setEchartsOptionsByDaily..', xAxisTmpData);
+
+  let xAxisData = uniq(xAxisTmpData).sort()
+
+  const lastTime = xAxisData[xAxisData.length - 1]
+
+  const legend = Object.keys(data)
+
+  const series = []
+  Object.keys(data).forEach((v) => {
+    const seriesData = []
+    let latest = 0
+    // 在当前时间内绘制，超出后暂不绘制
+    for (let i = 0; i < xAxisData.length; i++) {
+      const target = data[v].find(v2 => v2.date === xAxisData[i])
+      if (target) {
+        latest = target.y
+      }
+      if (xAxisData[i] > lastTime) {
+        seriesData.push(undefined)
+      } else {
+        seriesData.push(target ? target.y : latest)
+      }
+    }
+    series.push({
+      name: v,
+      type: 'line',
+      data: seriesData,
+      lineStyle: {
+        width: 2,
+      },
+      symbolSize: 4,
+    })
+  })
+
+  mEchartsOptions.value = {
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      show: true,
+      data: xAxisData
+    },
+    yAxis: {
+      show: true,
+      type: 'value',
+      minInterval: 0.01,
+    },
+    tooltip: {
+      show: true,
+      trigger: 'axis',
+    },
+    legend: {
+      data: legend,
+    },
+    series,
+  }
+}
+
+const timer = ref(null)
+// 轮询数据
+const initTimer = () => {
+  if (timer.value) {
+    clearInterval(timer.value)
+  }
+  timer.value = setInterval(() => {
+    getPredList()
+  }, 1000 * 10)
+}
+
+onMounted(() => {
+  initTimer()
+})
+
+onUnmounted(() => {
+  clearInterval(timer)
+})
+
+const mChartType = ref('daily') // daily day
+const onChartTypeChange = (e) => {
+  getPredList();
 }
 
 </script>
@@ -303,16 +409,16 @@ const setEchartsOptions = (data) => {
 }
 .container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   background: white;
-  padding: 4px;
 }
 .variety-list {
   width: 200px;
   overflow-y: auto;
   flex-shrink: 0;
-  height: 100vh;
+  height: 100%;
+  box-shadow: 0px 0px 5px 3px rgb(0 0 0 / 10%);
   .variety-item {
     height: 40px;
     border-radius: 4px;
@@ -346,11 +452,15 @@ const setEchartsOptions = (data) => {
   }
   .chart-content {
     background: #fff;
-    width: calc(100vw - 240px);
-    height: calc(100vh - 140px);
+    width: calc(100vw - 500px);
+    height: calc(100% - 140px);
     //width: 100%;
     //height: calc(100vh - 60px);
   }
+}
+
+.ml-10 {
+  margin-left: 10px;
 }
 
 </style>
