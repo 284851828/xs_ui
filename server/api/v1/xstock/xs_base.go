@@ -63,6 +63,32 @@ func (e *BaseApi) GetPredList(c *gin.Context) {
 	response.OkWithDetailed(resp, "获取成功", c)
 }
 
+// GetPredList
+// @Tags      XsBase
+// @Summary   获取预测数据日列表
+// @Security  ApiKeyAuth
+// @accept    application/json
+// @Produce   application/json
+// @Param     data  body     model_xstock.PredReq                                        true  "无"
+// @Success   200   {object}  response.Response{data=model_xstock.PredListResp,msg=string}  "预测数据日列表"
+// @Router    /xstock/getPred0000List [post]
+func (e *BaseApi) GetPred0000List(c *gin.Context) {
+	var req model_xstock.PredReq
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	resp := &model_xstock.Pred0000ListResp{}
+	err = resp.GetData(req)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败"+err.Error(), c)
+		return
+	}
+	response.OkWithDetailed(resp, "获取成功", c)
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 // // CreateExaCustomer

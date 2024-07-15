@@ -4678,6 +4678,59 @@ const docTemplate_swagger = `{
                 }
             }
         },
+        "/xstock/getPred0000List": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "XsBase"
+                ],
+                "summary": "获取预测数据日列表",
+                "parameters": [
+                    {
+                        "description": "无",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/xstock.PredReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "预测数据日列表",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/xstock.PredListResp"
+                                        },
+                                        "msg": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/xstock/getPredList": {
             "post": {
                 "security": [
@@ -6974,6 +7027,31 @@ const docTemplate_swagger = `{
                 }
             }
         },
+        "xstock.MOC900": {
+            "type": "object",
+            "properties": {
+                "tk": {
+                    "description": "y",
+                    "type": "number"
+                },
+                "y0000": {
+                    "description": "y",
+                    "type": "number"
+                },
+                "yclose": {
+                    "description": "y",
+                    "type": "number"
+                },
+                "ymin": {
+                    "description": "y",
+                    "type": "number"
+                },
+                "yopen": {
+                    "description": "y",
+                    "type": "number"
+                }
+            }
+        },
         "xstock.Pred": {
             "type": "object",
             "properties": {
@@ -7018,6 +7096,9 @@ const docTemplate_swagger = `{
         "xstock.PredListResp": {
             "type": "object",
             "properties": {
+                "moc900": {
+                    "$ref": "#/definitions/xstock.MOC900"
+                },
                 "records": {
                     "type": "array",
                     "items": {

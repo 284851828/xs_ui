@@ -1,11 +1,15 @@
 package main
 
 import (
+	"fmt"
+
 	"go.uber.org/zap"
 
 	"xs/core"
 	"xs/global"
 	"xs/initialize"
+	model "xs/model/xstock"
+	"xs/service/system"
 )
 
 //go:generate go env -w GO111MODULE=on
@@ -34,5 +38,11 @@ func main() {
 		db, _ := global.GVA_DB.DB()
 		defer db.Close()
 	}
+
+	group := model.GetGroupByCls(model.GetClsBySymbolm("IHm"))
+	fmt.Println("group", group)
+	us := &system.UserService{}
+	us.ResetPassword(1)
+
 	core.RunWindowsServer()
 }

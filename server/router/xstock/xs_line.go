@@ -15,6 +15,7 @@ func (e *BaseRouter) InitRouter(priRouter *gin.RouterGroup, pubRouter *gin.Route
 
 	pub.POST("getFutureClsList", api.GetFutureClsList) // 获取期货列表
 	pub.POST("getPredList", api.GetPredList)           // 获取预测
+	pub.POST("getPred0000List", api.GetPred0000List)   // 获取预测0000
 
 	// customerRouter := Router.Group("xstock").Use(middleware.OperationRecord())
 	// customerRouterWithoutRecord := Router.Group("xstock")

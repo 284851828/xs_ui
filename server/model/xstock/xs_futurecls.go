@@ -56,7 +56,7 @@ func (b *FutureCls) GetById(id string) error {
 }
 
 const sql_FutureClsList = `
-	select * from xs_futurecls order by showindex
+	select * from xs_futurecls where enable =1  order by showindex
 	`
 
 func GetFutureClsList() ([]FutureCls, error) {
